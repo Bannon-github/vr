@@ -29,6 +29,7 @@ export class ControllerManager {
   private readonly raycaster = new THREE.Raycaster();
   private readonly tempMatrix = new THREE.Matrix4();
   private onOrbCollected?: OrbCollectedCallback;
+  private collectArmed = false;
 
   /**
    * @param renderer  WebGL renderer (provides XR controller handles).
@@ -73,11 +74,18 @@ export class ControllerManager {
     this.onOrbCollected = fn;
   }
 
+  /** Game.loop arms this only while PLAYING so menu/pause triggers do not collect. */
+  setCollectArmed(armed: boolean): void {
+    this.collectArmed = armed;
+  }
+
   // ---------------------------------------------------------------------------
   // Hit detection
   // ---------------------------------------------------------------------------
 
   private onSelectStart(ctrl: THREE.XRTargetRaySpace): void {
+    if (!this.collectArmed) return;
+
     this.tempMatrix.identity().extractRotation(ctrl.matrixWorld);
 
     this.raycaster.ray.origin.setFromMatrixPosition(ctrl.matrixWorld);
