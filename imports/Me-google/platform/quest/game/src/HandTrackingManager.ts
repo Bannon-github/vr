@@ -40,10 +40,13 @@ export class HandTrackingManager {
   private pointerNdcX = 0;
   private pointerNdcY = 0;
   private pointerDown = false;
-  private pinchLatched = false;
+  private desktopPinchLatched = false;
+  private readonly xrPinchLatched = [false, false];
   private desktopEnabled = true;
   private xrHandsLive = false;
   private collectArmed = false;
+  private readonly thumbWorld = new THREE.Vector3();
+  private readonly indexWorld = new THREE.Vector3();
 
   constructor(
     private readonly renderer: THREE.WebGLRenderer,
@@ -62,11 +65,12 @@ export class HandTrackingManager {
     canvas.addEventListener('pointerdown', (ev) => this.onPointerDown(ev, canvas));
     canvas.addEventListener('pointerup', () => {
       this.pointerDown = false;
-      this.pinchLatched = false;
+      this.desktopPinchLatched = false;
       this.avatar.setPinched(false);
     });
     canvas.addEventListener('pointerleave', () => {
       this.pointerDown = false;
+      this.desktopPinchLatched = false;
       this.avatar.setPinched(false);
     });
 
@@ -76,6 +80,8 @@ export class HandTrackingManager {
     renderer.xr.addEventListener('sessionend', () => {
       this.desktopEnabled = true;
       this.xrHandsLive = false;
+      this.xrPinchLatched[0] = false;
+      this.xrPinchLatched[1] = false;
       this.avatar.enableMatrixAutoUpdate();
       this.avatar.restPose();
     });
@@ -155,16 +161,18 @@ export class HandTrackingManager {
       const side: 0 | 1 = i === 0 ? 0 : 1;
       this.avatar.poseFromWristMatrix(side, wrist.matrixWorld, false);
       if (thumb && index && collectEnabled) {
-        const pinched = isPinchClosed(thumb.position, index.position);
+        this.thumbWorld.setFromMatrixPosition(thumb.matrixWorld);
+        this.indexWorld.setFromMatrixPosition(index.matrixWorld);
+        const pinched = isPinchClosed(this.thumbWorld, this.indexWorld);
         if (side === 1) this.avatar.setPinched(pinched);
-        if (pinched && !this.pinchLatched) {
-          this.pinchLatched = true;
-          const origin = new THREE.Vector3().setFromMatrixPosition(index.matrixWorld);
+        if (pinched && !this.xrPinchLatched[i]) {
+          this.xrPinchLatched[i] = true;
+          const origin = this.indexWorld.clone();
           const hit = this.collectNear(origin, PINCH_REACH_M);
           if (hit) this.commitCollect(hit);
           else this.haptic.miss();
         }
-        if (!pinched) this.pinchLatched = false;
+        if (!pinched) this.xrPinchLatched[i] = false;
       }
     }
     this.xrHandsLive = anyJoints;
@@ -230,8 +238,8 @@ export class HandTrackingManager {
     if (ev.button !== 0) return;
     this.onPointerMove(ev, canvas);
     this.pointerDown = true;
-    if (this.collectArmed && !this.pinchLatched) {
-      this.pinchLatched = true;
+    if (this.collectArmed && !this.desktopPinchLatched) {
+      this.desktopPinchLatched = true;
       this.tryDesktopCollect();
     }
   }
