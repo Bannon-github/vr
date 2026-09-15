@@ -66,6 +66,7 @@ export class Game {
   private menuGroup?: THREE.Group;
   private gameOverGroup?: THREE.Group;
   private readonly listeners = new Set<(snap: GameSnapshot) => void>();
+  private lastHudKey = '';
 
   constructor(private readonly renderer: THREE.WebGLRenderer) {
     this.buildScene();
@@ -229,7 +230,19 @@ export class Game {
   }
 
   private emit(): void {
+    this.lastHudKey = '';
+    this.emitHudIfChanged();
+  }
+
+  /**
+   * Overlay subscribers (DOM chips) do not need 90 Hz updates. Emit only
+   * when a value the overlay actually displays has changed.
+   */
+  private emitHudIfChanged(): void {
     const snap = this.getSnapshot();
+    const key = overlayHudKey(snap);
+    if (key === this.lastHudKey) return;
+    this.lastHudKey = key;
     this.listeners.forEach((fn) => fn(snap));
   }
 
@@ -252,13 +265,12 @@ export class Game {
       this.avatar.setWristStats(this.score.getScore(), this.score.getCombo());
 
       if (this.timer.isExpired()) this.endRound();
-      else this.emit();
-    } else if (this.state === GameState.PAUSED) {
-      const wave = getWaveForScore(this.score.getScore());
-      this.spawner.update(delta, wave);
+      else this.emitHudIfChanged();
     }
 
-    this.hands.setCollectArmed(this.state === GameState.PLAYING);
+    const armed = isSimulating(this.state);
+    this.hands.setCollectArmed(armed);
+    this.controllers.setCollectArmed(armed);
     this.hands.update();
     this.avatar.update(delta);
     this.hud.setVisible(this.renderer.xr.isPresenting);
@@ -319,7 +331,6 @@ export class Game {
       this.billboardPos(),
     );
 
-    this.controllers.setOrbCollectedCallback((orb: Orb) => this.onOrbCollected(orb));
     for (const ctrl of this.controllers.controllers) {
       const existing = ctrl.userData['menuSelectHandler'] as (() => void) | undefined;
       if (existing) ctrl.removeEventListener('selectstart', existing);
@@ -430,4 +441,21 @@ export class Game {
     ctx.quadraticCurveTo(x, y, x + r, y);
     ctx.closePath();
   }
+}
+
+/** True only during an active round — pause/menu must freeze the world. */
+export function isSimulating(state: GameState): boolean {
+  return state === GameState.PLAYING;
+}
+
+/** Compact key of overlay-visible fields so Game can skip redundant DOM writes. */
+export function overlayHudKey(snap: GameSnapshot): string {
+  return [
+    snap.state,
+    snap.score,
+    snap.combo,
+    Math.ceil(snap.remainingMs / 1000),
+    snap.inputMode,
+    snap.handsVisible ? '1' : '0',
+  ].join('|');
 }
