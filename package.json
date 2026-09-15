@@ -1,0 +1,12 @@
+{
+  "name": "vr",
+  "private": true,
+  "version": "0.1.0",
+  "license": "MIT",
+  "scripts": {
+    "dev": "npm --prefix imports/Me-google/platform/quest/game run dev",
+    "test": "npm --prefix imports/Me-google/platform/quest/game test",
+    "build": "npm --prefix imports/Me-google/platform/quest/game run build",
+    "preview": "npm --prefix imports/Me-google/platform/quest/game run preview"
+  }
+}

@@ -31,7 +31,7 @@ more orbs, shorter lifetime, faster drift.
 | Collect orb    | Squeeze trigger |
 | Pause / Resume | Grip squeeze    |
 
-> Hand tracking controls are not implemented yet; update this section when added.
+> Hand tracking is implemented: pinch thumb + index finger to collect using the same scoring pipeline as controllers and desktop click.
 ## Directory Layout
 
 ```

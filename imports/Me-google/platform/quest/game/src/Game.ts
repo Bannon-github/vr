@@ -48,6 +48,19 @@ export interface GameSnapshot {
 
 const ROUND_DURATION_MS = 60_000;
 
+export const isSimulating = (state: GameState): boolean => state === GameState.PLAYING;
+
+export const overlayHudKey = (
+  snapshot: Pick<GameSnapshot, 'state' | 'score' | 'combo' | 'remainingMs' | 'inputMode' | 'handsVisible'>,
+): string => [
+  snapshot.state,
+  snapshot.score,
+  snapshot.combo,
+  Math.ceil(snapshot.remainingMs / 1000),
+  snapshot.inputMode,
+  snapshot.handsVisible ? 1 : 0,
+].join('|');
+
 export class Game {
   private readonly scene    = new THREE.Scene();
   private readonly camera   = new THREE.PerspectiveCamera(75, 1, 0.1, 50);
@@ -66,6 +79,7 @@ export class Game {
   private menuGroup?: THREE.Group;
   private gameOverGroup?: THREE.Group;
   private readonly listeners = new Set<(snap: GameSnapshot) => void>();
+  private lastOverlayKey = '';
 
   constructor(private readonly renderer: THREE.WebGLRenderer) {
     this.buildScene();
@@ -230,6 +244,9 @@ export class Game {
 
   private emit(): void {
     const snap = this.getSnapshot();
+    const key = overlayHudKey(snap);
+    if (key === this.lastOverlayKey) return;
+    this.lastOverlayKey = key;
     this.listeners.forEach((fn) => fn(snap));
   }
 
@@ -239,8 +256,11 @@ export class Game {
 
   private loop(): void {
     const delta = Math.min(this.clock.getDelta() * 1_000, 100);
+    const collectArmed = isSimulating(this.state);
+    this.controllers.setCollectArmed(collectArmed);
+    this.hands.setCollectArmed(collectArmed);
 
-    if (this.state === GameState.PLAYING) {
+    if (isSimulating(this.state)) {
       this.score.tick(delta);
       this.timer.tick(delta);
 
@@ -253,12 +273,8 @@ export class Game {
 
       if (this.timer.isExpired()) this.endRound();
       else this.emit();
-    } else if (this.state === GameState.PAUSED) {
-      const wave = getWaveForScore(this.score.getScore());
-      this.spawner.update(delta, wave);
     }
 
-    this.hands.setCollectArmed(this.state === GameState.PLAYING);
     this.hands.update();
     this.avatar.update(delta);
     this.hud.setVisible(this.renderer.xr.isPresenting);
@@ -319,7 +335,6 @@ export class Game {
       this.billboardPos(),
     );
 
-    this.controllers.setOrbCollectedCallback((orb: Orb) => this.onOrbCollected(orb));
     for (const ctrl of this.controllers.controllers) {
       const existing = ctrl.userData['menuSelectHandler'] as (() => void) | undefined;
       if (existing) ctrl.removeEventListener('selectstart', existing);

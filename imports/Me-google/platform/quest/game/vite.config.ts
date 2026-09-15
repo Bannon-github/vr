@@ -11,13 +11,13 @@ export default defineConfig({
     include: ['three'],
   },
   server: {
-    host: '0.0.0.0',
-    port: 8080,
-    strictPort: true,
+    host: true,
+    port: Number(process.env.PORT) || 5173,
+    strictPort: false,
   },
   preview: {
-    host: '0.0.0.0',
-    port: 8080,
-    strictPort: true,
+    host: true,
+    port: Number(process.env.PORT) || 5173,
+    strictPort: false,
   },
 });

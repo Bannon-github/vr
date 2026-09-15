@@ -1,111 +1,39 @@
-# vr
-# VR – Evolving Quest App
+# Orb Collector (Meta Quest WebXR)
 
-[![Made for Meta Quest](https://img.shields.io/badge/Made%20for-Meta%20Quest-blue.svg)](https://developers.meta.com/horizon/)
-[![WebXR & A-Frame](https://img.shields.io/badge/WebXR%20%26%20A--Frame-Ready-blueviolet.svg)](https://aframe.io/)
-[![Beginner Friendly](https://img.shields.io/badge/Beginner-Friendly-green.svg)](https://github.com/bannon-github/vr)
+This repository ships **Orb Collector**, a three.js/WebXR game for Meta Quest.
 
-**VR** is my personal journey into building immersive apps for the **Meta Quest family** (Quest 2, 3, 3S, Pro). This repository consolidates learnings and reusable patterns from several VR projects into a unified starter foundation.
+Playable source of truth:
 
-I'm an uneducated coder with zero formal training or professional experience — just a huge passion for VR and a dream to build a legitimate business on the Meta Horizon platform.
-
-This repo will evolve as I learn, experiment, fail, and improve. The app starts simple and grows based on what feels fun and useful in-headset. No rigid roadmap — just honest progress.
-
-Thanks in advance to **Meta**, **Google**, **GitHub**, **xAI**, and everyone who joins this adventure later. You make this possible for someone like me.
-
-## Current Status (as of September 2026)
-- **Bootstrap phase complete**: Imported starter assets and reusable code from three existing projects
-- WebXR working games and patterns integrated
-- A-Frame hooks and Quest 3 game examples available in `/imports`
-- Theme management API and architecture patterns documented
-- Ready for active development and feature expansion
-- Goal: Build something playable, then iterate toward monetization
-
-See [`MIGRATION_NOTES.md`](./MIGRATION_NOTES.md) for details on imported content, what was excluded and why, and suggested next steps.
-
-## Repository Structure
-
-```
-vr/
-├── README.md                    # This file
-├── MIGRATION_NOTES.md           # Import details and next steps
-├── .gitignore                   # Unity/Node/Python/editor artifacts
-├── imports/                     # Consolidated starter assets
-│   ├── quest-vr-creator/       # A-Frame sandbox hooks & roadmap
-│   ├── Me-google/              # WebXR Orb Collector game, ThemeManager API, JSON schema validators
-│   └── WeMadeAGame/            # HTML5/JS mini-games & game-hub patterns
-└── [future: main app code & Unity project structure]
-```
-
-## What's Included (from PR #1 Bootstrap Import)
-
-### From `quest-vr-creator`
-- A-Frame sandbox integration hooks (`hooks/*.js`)
-- VR concepts and roadmap documentation
-
-### From `Me-google` (Most Valuable)
-- Working WebXR **Orb Collector** Quest 3 game
-- **ThemeManager API** for runtime theme switching
-- JSON schema theme specification + QA validators
-- Reusable data models and game architecture patterns
-- Architecture decision records (73 files)
-
-### From `WeMadeAGame`
-- HTML5/JS slot-machine mini-games
-- Game-hub page layout patterns
-- Art & audio generator scripts (outputs excluded)
-
-### Project Foundation
-- Root `.gitignore` for common build artifacts
-- Documentation structure for future development
+`/home/runner/work/vr/vr/imports/Me-google/platform/quest/game`
 
 ## Quick Start
 
-These steps are beginner-friendly — copy-paste where possible. No budget needed beyond a Quest headset and free tools.
-
-### 1. Enable Developer Mode on Your Quest
-- On headset: **Settings > System > Developer > Toggle Developer Mode ON**
-
-### 2. Install Required Tools
-- **Unity Hub & Editor**: https://unity.com/download (latest LTS 2022+)
-- Add **Android Build Support** during install
-
-### 3. Clone This Repo
 ```bash
 git clone https://github.com/Bannon-github/vr.git
 cd vr
+npm test
+npm run build
+npm run dev
 ```
 
-### 4. Explore the Imported Assets
-- Start with `/imports/Me-google/` for the working Orb Collector game
-- Check `/imports/quest-vr-creator/` for A-Frame hooks and patterns
-- Review `MIGRATION_NOTES.md` for context on all imports
+Desktop play: open the Vite URL shown in terminal.
 
-### 5. Set Up Your Quest for Development
-- Connect Quest via USB cable to your dev machine
-- Enable USB Debugging on headset
-- Use Android Debug Bridge (adb) to install builds
+Quest Browser over USB:
 
-## Next Steps
+```bash
+adb reverse tcp:5173 tcp:5173
+```
 
-See [`MIGRATION_NOTES.md`](./MIGRATION_NOTES.md) for:
-- Detailed per-source rationale
-- Known caveats and pending fixes
-- Suggested cleanup priorities
-- Architecture recommendations
+Then open `http://localhost:5173` in Quest Browser and press **Enter VR**.
 
-## Project Goals & Vision
+## Controls
 
-**Short term**: Get the imported WebXR game running on Quest 3, polish gameplay.
+- Desktop: move pointer + left click to collect
+- Quest controllers: aim + trigger to collect, squeeze to pause/resume
+- Quest hands: pinch thumb/index to collect
 
-**Medium term**: Expand with new features (multiplayer, persistence, monetization).
+## Notes
 
-**Long term**: Publish to Meta Horizon Store and build a sustainable VR business.
-
-## License & Attribution
-
-This repo integrates code from multiple sources (see `MIGRATION_NOTES.md` for full attribution). Check individual source directories for original licenses.
-
----
-
-*Last Updated: September 2026 — Bootstrap import complete. Main development phase begins.*
+- No Unity setup is required for current gameplay development.
+- Do not import additional repositories under `imports/`.
+- Player-visible updates are tracked in `FEATURES.md`.
