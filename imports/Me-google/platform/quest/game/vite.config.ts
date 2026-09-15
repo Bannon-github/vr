@@ -11,7 +11,13 @@ export default defineConfig({
     include: ['three'],
   },
   server: {
-    // Allow LAN access for on-device testing (Quest Browser)
-    host: true,
+    host: '0.0.0.0',
+    port: 8080,
+    strictPort: true,
+  },
+  preview: {
+    host: '0.0.0.0',
+    port: 8080,
+    strictPort: true,
   },
 });
