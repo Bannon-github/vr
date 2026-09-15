@@ -55,7 +55,7 @@ adb reverse tcp:5173 tcp:5173
 Then in Quest Browser open `http://localhost:5173` → **Enter VR**.
 
 | Action | Desktop | Controllers | Hand tracking |
-|---|---|---|
+|---|---|---|---|
 | Collect | Click | Trigger | Pinch (thumb + index) |
 | Pause | Space / overlay | Grip squeeze | Overlay / grip |
 | Toggle hands | H | — | — |
