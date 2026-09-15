@@ -28,7 +28,7 @@ You need Node 20+ (22 is what CI uses). A Quest headset is optional for the firs
 ```bash
 git clone https://github.com/Bannon-github/vr.git
 cd vr
-npm install --prefix imports/Me-google/platform/quest/game
+npm install
 npm test
 npm run dev
 ```
@@ -55,7 +55,7 @@ adb reverse tcp:5173 tcp:5173
 Then in Quest Browser open `http://localhost:5173` → **Enter VR**.
 
 | Action | Desktop | Controllers | Hand tracking |
-|---|---|---|---|
+|---|---|---|
 | Collect | Click | Trigger | Pinch (thumb + index) |
 | Pause | Space / overlay | Grip squeeze | Overlay / grip |
 | Toggle hands | H | — | — |
