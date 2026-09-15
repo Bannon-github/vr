@@ -7,6 +7,7 @@ import {
   distance3,
   findNearestInReach,
   isPinchClosed,
+  nextPinchLatch,
   PINCH_CLOSE_M,
   PINCH_REACH_M,
 } from '../collectProximity.js';
@@ -86,5 +87,23 @@ describe('findNearestInReach', () => {
       -1,
     );
     expect(found).toBeNull();
+  });
+});
+
+describe('nextPinchLatch', () => {
+  it('fires on the rising edge and then stays latched', () => {
+    const open = nextPinchLatch(false, false);
+    expect(open).toEqual({ fire: false, latched: false });
+    const down = nextPinchLatch(true, open.latched);
+    expect(down).toEqual({ fire: true, latched: true });
+    const held = nextPinchLatch(true, down.latched);
+    expect(held).toEqual({ fire: false, latched: true });
+  });
+
+  it('unlatches when the pinch opens, including while collect is disarmed', () => {
+    const released = nextPinchLatch(false, true);
+    expect(released).toEqual({ fire: false, latched: false });
+    const nextDown = nextPinchLatch(true, released.latched);
+    expect(nextDown.fire).toBe(true);
   });
 });
