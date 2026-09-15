@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" role="img" aria-label="Pinch-collect play view with avatar hands and orbs">
+  <rect width="960" height="540" fill="#071018"/>
+  <text x="48" y="48" fill="#a5f3fc" font-family="sans-serif" font-size="22">Play — pinch near an orb · H toggles meshes</text>
+  <circle cx="620" cy="220" r="36" fill="#22d3ee" opacity="0.9"/>
+  <circle cx="740" cy="300" r="28" fill="#34d399" opacity="0.9"/>
+  <circle cx="560" cy="340" r="22" fill="#f59e0b" opacity="0.95"/>
+  <g fill="none" stroke="#67e8f9" stroke-width="4" opacity="0.75">
+    <path d="M180 360 C200 300 240 280 280 300 C300 250 340 240 360 280"/>
+    <path d="M200 400 C230 370 250 360 280 370"/>
+  </g>
+  <text x="170" y="450" fill="#94a3b8" font-family="sans-serif" font-size="16">avatar hand (semi-transparent)</text>
+  <text x="700" y="200" fill="#e2e8f0" font-family="sans-serif" font-size="16">pinch collect</text>
+  <rect x="48" y="80" width="220" height="90" rx="8" fill="#0f172a" stroke="#334155"/>
+  <text x="64" y="114" fill="#f8fafc" font-family="sans-serif" font-size="16">Score 250  Combo 2x</text>
+  <text x="64" y="144" fill="#94a3b8" font-family="sans-serif" font-size="14">via ScoreManager</text>
+  <text x="48" y="510" fill="#64748b" font-family="sans-serif" font-size="14">docs/screenshots/avatar-hands-play.svg</text>
+</svg>

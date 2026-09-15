@@ -1,20 +1,24 @@
-# Features
+# VR features list
 
-Player-visible behavior. If it is not on this list, it is not shipped.
+Living checklist for `Bannon-github/vr`. Mark an item **done** only when the code, a UI entry point, a README how-to, and at least one screenshot all exist on the same branch.
 
-## Shipped
+## Done
 
-- **60-second Orb Collector loop** — waves, combo (up to 8×), localStorage high score.
-- **Avatar Hands** — semi-transparent white 3D hands from the Quest Creator vision notes.
-- **Three collect paths, one score pipeline** — controller trigger, XR pinch, desktop click/ghost-hands.
-- **Desktop overlay** — start panel, HUD chips, pause, hands toggle (Space / H).
-- **Spatial HUD in headset** — score + timer panels that follow the camera.
-- **Pause freeze** — orbs, timer, combo, and collect stop while paused.
-- **Forward-cone spawn on desktop** so orbs appear in front of the camera.
+1. **Bootstrap import** (PR #1) — starter assets from `quest-vr-creator`, `Me-google`, and `WeMadeAGame` under `imports/`.
+2. **Avatar Hands (TODO #4) — pinch-collect orbs in Orb Collector** — **implemented on `feature/avatar-hands` (PR #2)**.
+   - Entry: Orb Collector overlay **Start round** button, then pinch (hands) or trigger (controllers). Press **H** to toggle the avatar-hand meshes.
+   - Connections: hand + controller collect both call the shared `OrbCollectedCallback`; colours come from `theme.ts`; score/combo is written through `ScoreManager`.
+   - Docs: root `README.md` “Avatar Hands” section; `imports/Me-google/platform/quest/game/README.md`.
+   - Screenshots: `docs/screenshots/avatar-hands-start.svg`, `docs/screenshots/avatar-hands-play.svg`.
 
-## Next (in order)
+## Still open (from quest-vr-creator TODO + repo notes)
 
-1. GitHub Pages (HTTPS) so Quest Browser can load the game without `adb reverse`.
-2. Promote the game from `imports/Me-google/platform/quest/game/` to `/app`.
-3. Wrist holographic tablet (vision element 2) bound to the left avatar wrist.
-4. Comfort pass: reduced-motion, snap-turn optional, guardian-safe spawn bounds.
+- Real-device Quest Browser full interaction test + feedback loop
+- Full binary glTF export via official GLTFExporter
+- Scene share via cloud / shortened link
+- Opacity live controls + more advanced material panel polish
+- Multiplayer, persistence beyond localStorage, Horizon Store packaging
+
+## Notes for the next agent
+
+Do not rewrite Orb Collector game files unless a test fails. Preview convention from earlier sessions: Vite on `0.0.0.0:8080` when a sandbox `/workspace/startup.sh` exists.

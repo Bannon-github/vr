@@ -2,6 +2,8 @@
 
 **Status as of Grok automation session (2026-07-29):** Core intelligence layer fully production-hardened and extended with 5 new features. All 4 hooks integrated and syntax-validated (node --check zero errors), index.html complete with physics + super-hands + multi-tool reactive tablet (5 primitives + materials + persist + export JSON/GLTF + delete + holographic wrist + toggle + live adjust + URL hash share + double-grip), workflow validates syntax + size + feature presence. **5 new features implemented, usable without errors, consistent design, quality assessed, proof screenshot uploaded.**
 
+**2026-09-15 update (Bannon-github/vr PR #2):** Avatar Hands pinch-collect is implemented in the imported Orb Collector (`imports/Me-google/platform/quest/game/`), not in the A-Frame creator sandbox. Item 4 below is marked done for the vr repo integration.
+
 ## Completed ✅
 - [x] Error mitigation hook (global + safeExecute)
 - [x] State management with history, events, selectTool, undoLastSpawn
@@ -26,12 +28,13 @@
 - [x] **Object delete on double-grip** (rightHand double-gripdown <450ms on .spawned-object deletes via raycaster)
 - [x] **Advanced material panel** (M+ / R+ / APPLY buttons for live metalness/roughness adjust + apply-to-last; custom preset; reactive stats show values)
 - [x] **Scene share via URL hash** (SHARE button + key X; base64 encode state to location.hash + clipboard; auto-load on boot if present)
+- [x] **Avatar Hands pinch-collect in Orb Collector** (`AvatarHands.ts` + `HandTrackingManager.ts`; Start round / click-or-pinch / H toggle; shared collect callback with ControllerManager; theme.ts + ScoreManager)
 
 ## Next Priorities (one at a time, follow Local Development Workflow from skill)
 1. [ ] Real device Quest Browser full interaction test + feedback loop
 2. [ ] Full binary GLTF with mesh extraction via official GLTFExporter (if CDN compatible)
 3. [ ] Scene share via simple cloud or shortened link (beyond hash)
-4. [ ] Avatar hands polish from visions/ (semi-transparent)
+4. [x] Avatar hands polish from visions/ (semi-transparent) — **done in Orb Collector on feature/avatar-hands**
 5. [ ] Opacity live controls + more advanced panel polish (O+/O- already partially supported in adjust)
 
 ## Design Rules for All Future Work
