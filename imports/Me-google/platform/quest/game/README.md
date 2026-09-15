@@ -23,15 +23,34 @@ as possible in **60 seconds**.
 **Wave progression**: difficulty ramps automatically as your score climbs through 5 tiers —
 more orbs, shorter lifetime, faster drift.
 
+## Avatar Hands (pinch-collect)
+
+**Entry point:** the overlay **Start round** button in `index.html` / `OverlayUI.ts`.
+
+How to use:
+1. Start a round from the overlay.
+2. Collect with **pinch** (hand tracking) or **click / trigger** (controller / desktop).
+3. Press **H** to toggle the semi-transparent avatar-hand meshes (`AvatarHands.ts`).
+
+Wiring:
+- `HandTrackingManager` and `ControllerManager` both fire the shared `OrbCollectedCallback`.
+- Colours and HUD chrome come from `theme.ts`.
+- Points go through `ScoreManager` so combos and waves stay intact.
+- `collectProximity.ts` + `src/__tests__/collectProximity.test.ts` cover pinch reach.
+
+Screenshots (repo root):
+- `docs/screenshots/avatar-hands-start.svg`
+- `docs/screenshots/avatar-hands-play.svg`
+
 ## Controls
 
-| Action         | Controller      |
-|----------------|-----------------|
-| Aim at orb     | Point controller|
-| Collect orb    | Squeeze trigger |
-| Pause / Resume | Grip squeeze    |
+| Action         | Controller / desktop | Hands |
+|----------------|----------------------|-------|
+| Aim at orb     | Point controller     | Reach |
+| Collect orb    | Squeeze trigger / click | Pinch |
+| Pause / Resume | Grip squeeze         | (overlay) |
+| Toggle hands   | **H** key            | **H** key |
 
-> Hand tracking is implemented: pinch thumb + index finger to collect using the same scoring pipeline as controllers and desktop click.
 ## Directory Layout
 
 ```
@@ -50,8 +69,12 @@ game/
     ├── Orb.ts              Orb mesh entity
     ├── OrbSpawner.ts       Spawn pool and lifecycle
     ├── ControllerManager.ts XR controller input + raycasting
+    ├── HandTrackingManager.ts Pinch collect + shared callback
+    ├── AvatarHands.ts      Semi-transparent hand meshes (H toggle)
+    ├── OverlayUI.ts        Start-round overlay entry point
     ├── HapticManager.ts    Vibration feedback wrapper
     ├── HUDManager.ts       Spatial floating UI panels
+    ├── collectProximity.ts Pinch / ray collect reach helper
     └── __tests__/          Unit tests (vitest)
 ```
 

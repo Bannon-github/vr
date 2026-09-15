@@ -40,8 +40,8 @@ export class HandTrackingManager {
   private pointerNdcX = 0;
   private pointerNdcY = 0;
   private pointerDown = false;
-  private readonly xrPinchLatched: [boolean, boolean] = [false, false];
   private desktopPinchLatched = false;
+  private readonly xrPinchLatched = [false, false];
   private desktopEnabled = true;
   private xrHandsLive = false;
   private collectArmed = false;
@@ -113,7 +113,7 @@ export class HandTrackingManager {
    */
   update(): void {
     if (this.renderer.xr.isPresenting) {
-      this.updateXr();
+      this.updateXr(this.collectArmed);
       return;
     }
     if (!this.desktopEnabled) return;
@@ -148,7 +148,7 @@ export class HandTrackingManager {
     this.avatar.poseDesktop(this.tmp, this.camera, this.pointerDown);
   }
 
-  private updateXr(): void {
+  private updateXr(collectEnabled: boolean): void {
     let anyJoints = false;
     for (let i = 0; i < this.xrHands.length; i++) {
       const hand = this.xrHands[i];
@@ -160,25 +160,19 @@ export class HandTrackingManager {
       anyJoints = true;
       const side: 0 | 1 = i === 0 ? 0 : 1;
       this.avatar.poseFromWristMatrix(side, wrist.matrixWorld, false);
-      if (thumb && index) {
+      if (thumb && index && collectEnabled) {
         this.thumbWorld.setFromMatrixPosition(thumb.matrixWorld);
         this.indexWorld.setFromMatrixPosition(index.matrixWorld);
         const pinched = isPinchClosed(this.thumbWorld, this.indexWorld);
         if (side === 1) this.avatar.setPinched(pinched);
-        if (!this.collectArmed) {
-          this.xrPinchLatched[side] = false;
-          continue;
+        if (pinched && !this.xrPinchLatched[i]) {
+          this.xrPinchLatched[i] = true;
+          const origin = this.indexWorld.clone();
+          const hit = this.collectNear(origin, PINCH_REACH_M);
+          if (hit) this.commitCollect(hit);
+          else this.haptic.miss();
         }
-        if (pinched && !this.xrPinchLatched[side]) {
-          this.xrPinchLatched[side] = true;
-          const hit = this.collectNear(this.indexWorld, PINCH_REACH_M);
-          if (hit) {
-            this.commitCollect(hit);
-          } else {
-            this.haptic.miss();
-          }
-        }
-        if (!pinched) this.xrPinchLatched[side] = false;
+        if (!pinched) this.xrPinchLatched[i] = false;
       }
     }
     this.xrHandsLive = anyJoints;

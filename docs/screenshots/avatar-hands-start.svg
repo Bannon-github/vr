@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" role="img" aria-label="Orb Collector start overlay with Start round button">
+  <rect width="960" height="540" fill="#0b1220"/>
+  <text x="48" y="64" fill="#7dd3fc" font-family="sans-serif" font-size="28">Orb Collector — Avatar Hands</text>
+  <text x="48" y="104" fill="#cbd5e1" font-family="sans-serif" font-size="18">Entry point: Start round. Then pinch or click. Press H to toggle hands.</text>
+  <rect x="280" y="180" width="400" height="220" rx="16" fill="#111827" stroke="#38bdf8" stroke-width="2"/>
+  <text x="480" y="240" text-anchor="middle" fill="#e2e8f0" font-family="sans-serif" font-size="22">Ready to collect</text>
+  <rect x="360" y="280" width="240" height="56" rx="8" fill="#0284c7"/>
+  <text x="480" y="316" text-anchor="middle" fill="#f8fafc" font-family="sans-serif" font-size="20" font-weight="700">Start round</text>
+  <text x="48" y="500" fill="#64748b" font-family="sans-serif" font-size="14">docs/screenshots/avatar-hands-start.svg</text>
+</svg>

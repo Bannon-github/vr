@@ -2,11 +2,15 @@
   "name": "vr",
   "private": true,
   "version": "0.1.0",
+  "description": "Orb Collector — a Meta Quest WebXR game. The playable app lives in imports/Me-google/platform/quest/game.",
   "license": "MIT",
   "scripts": {
-    "dev": "npm --prefix imports/Me-google/platform/quest/game run dev",
-    "test": "npm --prefix imports/Me-google/platform/quest/game test",
-    "build": "npm --prefix imports/Me-google/platform/quest/game run build",
-    "preview": "npm --prefix imports/Me-google/platform/quest/game run preview"
+    "dev": "npm run dev --prefix imports/Me-google/platform/quest/game",
+    "build": "npm run build --prefix imports/Me-google/platform/quest/game",
+    "preview": "npm run preview --prefix imports/Me-google/platform/quest/game",
+    "test": "npm test --prefix imports/Me-google/platform/quest/game"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }

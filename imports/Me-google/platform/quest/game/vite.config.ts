@@ -1,5 +1,7 @@
 import { defineConfig } from 'vite';
 
+const port = Number(process.env.PORT) || 5173;
+
 export default defineConfig({
   base: './',
   build: {
@@ -12,12 +14,12 @@ export default defineConfig({
   },
   server: {
     host: true,
-    port: Number(process.env.PORT) || 5173,
+    port,
     strictPort: false,
   },
   preview: {
     host: true,
-    port: Number(process.env.PORT) || 5173,
+    port,
     strictPort: false,
   },
 });

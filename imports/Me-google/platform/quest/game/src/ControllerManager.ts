@@ -74,7 +74,7 @@ export class ControllerManager {
     this.onOrbCollected = fn;
   }
 
-  /** Game.loop arms collect only while PLAYING. */
+  /** Game.loop arms this only while PLAYING so menu/pause triggers do not collect. */
   setCollectArmed(armed: boolean): void {
     this.collectArmed = armed;
   }

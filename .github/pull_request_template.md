@@ -1,15 +1,26 @@
-## Summary
+## Why
 
-<!-- What player-visible change does this PR ship? -->
+<!-- What player-facing problem does this solve? One or two sentences. -->
 
-## Validation
+## What changed
 
-- [ ] `npm test` (from `imports/Me-google/platform/quest/game`)
-- [ ] `npm run build` (from `imports/Me-google/platform/quest/game`)
-- [ ] Manual Quest/Desktop smoke test completed
+-
 
-## Scope checks
+## How to try
 
-- [ ] No new repo imported under `imports/`
-- [ ] No Unity-first workflow introduced
-- [ ] Orb collection still uses one shared callback pipeline
+```bash
+npm test
+npm run dev
+```
+
+Desktop: Start round → move pointer → click orbs. Space pauses. H toggles hands.
+
+Quest: `adb reverse tcp:5173 tcp:5173` → Quest Browser → `http://localhost:5173` → Enter VR.
+
+## Checks
+
+- [ ] `npm test` passes
+- [ ] Pause freezes orbs / timer / collect
+- [ ] Collect still goes through the shared callback (controllers, pinch, click)
+- [ ] Did not import a new repo into `imports/`
+- [ ] `FEATURES.md` updated if the player can see the change

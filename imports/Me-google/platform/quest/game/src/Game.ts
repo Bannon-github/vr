@@ -48,19 +48,6 @@ export interface GameSnapshot {
 
 const ROUND_DURATION_MS = 60_000;
 
-export const isSimulating = (state: GameState): boolean => state === GameState.PLAYING;
-
-export const overlayHudKey = (
-  snapshot: Pick<GameSnapshot, 'state' | 'score' | 'combo' | 'remainingMs' | 'inputMode' | 'handsVisible'>,
-): string => [
-  snapshot.state,
-  snapshot.score,
-  snapshot.combo,
-  Math.ceil(snapshot.remainingMs / 1000),
-  snapshot.inputMode,
-  snapshot.handsVisible ? 1 : 0,
-].join('|');
-
 export class Game {
   private readonly scene    = new THREE.Scene();
   private readonly camera   = new THREE.PerspectiveCamera(75, 1, 0.1, 50);
@@ -79,7 +66,7 @@ export class Game {
   private menuGroup?: THREE.Group;
   private gameOverGroup?: THREE.Group;
   private readonly listeners = new Set<(snap: GameSnapshot) => void>();
-  private lastOverlayKey = '';
+  private lastHudKey = '';
 
   constructor(private readonly renderer: THREE.WebGLRenderer) {
     this.buildScene();
@@ -243,10 +230,19 @@ export class Game {
   }
 
   private emit(): void {
+    this.lastHudKey = '';
+    this.emitHudIfChanged();
+  }
+
+  /**
+   * Overlay subscribers (DOM chips) do not need 90 Hz updates. Emit only
+   * when a value the overlay actually displays has changed.
+   */
+  private emitHudIfChanged(): void {
     const snap = this.getSnapshot();
     const key = overlayHudKey(snap);
-    if (key === this.lastOverlayKey) return;
-    this.lastOverlayKey = key;
+    if (key === this.lastHudKey) return;
+    this.lastHudKey = key;
     this.listeners.forEach((fn) => fn(snap));
   }
 
@@ -256,11 +252,8 @@ export class Game {
 
   private loop(): void {
     const delta = Math.min(this.clock.getDelta() * 1_000, 100);
-    const collectArmed = isSimulating(this.state);
-    this.controllers.setCollectArmed(collectArmed);
-    this.hands.setCollectArmed(collectArmed);
 
-    if (isSimulating(this.state)) {
+    if (this.state === GameState.PLAYING) {
       this.score.tick(delta);
       this.timer.tick(delta);
 
@@ -272,9 +265,12 @@ export class Game {
       this.avatar.setWristStats(this.score.getScore(), this.score.getCombo());
 
       if (this.timer.isExpired()) this.endRound();
-      else this.emit();
+      else this.emitHudIfChanged();
     }
 
+    const armed = isSimulating(this.state);
+    this.hands.setCollectArmed(armed);
+    this.controllers.setCollectArmed(armed);
     this.hands.update();
     this.avatar.update(delta);
     this.hud.setVisible(this.renderer.xr.isPresenting);
@@ -445,4 +441,21 @@ export class Game {
     ctx.quadraticCurveTo(x, y, x + r, y);
     ctx.closePath();
   }
+}
+
+/** True only during an active round — pause/menu must freeze the world. */
+export function isSimulating(state: GameState): boolean {
+  return state === GameState.PLAYING;
+}
+
+/** Compact key of overlay-visible fields so Game can skip redundant DOM writes. */
+export function overlayHudKey(snap: GameSnapshot): string {
+  return [
+    snap.state,
+    snap.score,
+    snap.combo,
+    Math.ceil(snap.remainingMs / 1000),
+    snap.inputMode,
+    snap.handsVisible ? '1' : '0',
+  ].join('|');
 }

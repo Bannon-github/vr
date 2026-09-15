@@ -1,51 +1,59 @@
-import { describe, expect, test } from 'vitest';
-import { GameState, isSimulating, overlayHudKey, type GameSnapshot } from '../Game.js';
+/**
+ * Game.helpers.test.ts — pause freeze and overlay emit-key contracts.
+ */
 
-const baseSnapshot = (): GameSnapshot => ({
-  state: GameState.PLAYING,
-  score: 10,
-  combo: 2,
-  wave: 1,
-  highScore: 100,
-  remainingMs: 59_001,
-  inputMode: 'desktop-hands',
-  handsVisible: true,
-  orbCount: 5,
-});
+import { describe, it, expect } from 'vitest';
+import {
+  GameState,
+  overlayHudKey,
+  isSimulating,
+  type GameSnapshot,
+} from '../Game.js';
+
+function snap(over: Partial<GameSnapshot>): GameSnapshot {
+  return {
+    state: GameState.PLAYING,
+    score: 0,
+    combo: 1,
+    wave: 1,
+    highScore: 0,
+    remainingMs: 60_000,
+    inputMode: 'desktop-hands',
+    handsVisible: true,
+    orbCount: 0,
+    ...over,
+  };
+}
 
 describe('isSimulating', () => {
-  test('returns true only for PLAYING', () => {
-    expect(isSimulating(GameState.LOADING)).toBe(false);
-    expect(isSimulating(GameState.MENU)).toBe(false);
-    expect(isSimulating(GameState.PAUSED)).toBe(false);
-    expect(isSimulating(GameState.GAME_OVER)).toBe(false);
+  it('runs the world only while PLAYING', () => {
     expect(isSimulating(GameState.PLAYING)).toBe(true);
+    expect(isSimulating(GameState.PAUSED)).toBe(false);
+    expect(isSimulating(GameState.MENU)).toBe(false);
+    expect(isSimulating(GameState.GAME_OVER)).toBe(false);
+    expect(isSimulating(GameState.LOADING)).toBe(false);
   });
 });
 
 describe('overlayHudKey', () => {
-  test('ignores orbCount', () => {
-    const a = baseSnapshot();
-    const b = { ...a, orbCount: 99 };
-    expect(overlayHudKey(a)).toBe(overlayHudKey(b));
+  it('is stable when only orb count changes', () => {
+    const a = overlayHudKey(snap({ orbCount: 1 }));
+    const b = overlayHudKey(snap({ orbCount: 8 }));
+    expect(a).toBe(b);
   });
 
-  test('changes with second boundary', () => {
-    const a = baseSnapshot();
-    const b = { ...a, remainingMs: 58_000 };
-    expect(overlayHudKey(a)).not.toBe(overlayHudKey(b));
+  it('changes when the displayed second ticks', () => {
+    const a = overlayHudKey(snap({ remainingMs: 59_200 }));
+    const b = overlayHudKey(snap({ remainingMs: 58_900 }));
+    expect(a).not.toBe(b);
   });
 
-  test('changes with score/combo/state', () => {
-    const a = baseSnapshot();
-    expect(overlayHudKey({ ...a, score: a.score + 1 })).not.toBe(overlayHudKey(a));
-    expect(overlayHudKey({ ...a, combo: a.combo + 1 })).not.toBe(overlayHudKey(a));
-    expect(overlayHudKey({ ...a, state: GameState.PAUSED })).not.toBe(overlayHudKey(a));
-  });
-
-  test('changes with hands visibility and input mode', () => {
-    const a = baseSnapshot();
-    expect(overlayHudKey({ ...a, handsVisible: !a.handsVisible })).not.toBe(overlayHudKey(a));
-    expect(overlayHudKey({ ...a, inputMode: 'controllers' })).not.toBe(overlayHudKey(a));
+  it('changes on score, combo, pause, and hands visibility', () => {
+    const base = overlayHudKey(snap({}));
+    expect(overlayHudKey(snap({ score: 10 }))).not.toBe(base);
+    expect(overlayHudKey(snap({ combo: 3 }))).not.toBe(base);
+    expect(overlayHudKey(snap({ state: GameState.PAUSED }))).not.toBe(base);
+    expect(overlayHudKey(snap({ handsVisible: false }))).not.toBe(base);
+    expect(overlayHudKey(snap({ inputMode: 'xr-hands' }))).not.toBe(base);
   });
 });
