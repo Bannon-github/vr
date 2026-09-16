@@ -21,6 +21,8 @@ export class OrbSpawner {
   private orbs: Orb[] = [];
   private timeSinceLastSpawn = 0;
   private active = false;
+  /** When true, spawn in a forward cone so desktop players can see orbs. */
+  private preferForward = true;
 
   /**
    * @param scene     The Three.js scene to add/remove orb meshes from.
@@ -39,6 +41,19 @@ export class OrbSpawner {
   /** Enable or disable spawning. When inactive, existing orbs still update. */
   setActive(val: boolean): void {
     this.active = val;
+  }
+
+  /**
+   * Restrict new spawns to a forward cone (desktop preview) or allow a
+   * full hemisphere (Quest, player can look around).
+   */
+  setPreferForward(val: boolean): void {
+    this.preferForward = val;
+  }
+
+  /** Make the next update spawn immediately (round start). */
+  primeFirstSpawn(): void {
+    this.timeSinceLastSpawn = Number.POSITIVE_INFINITY;
   }
 
   /** Remove and dispose all live orbs immediately (e.g. on round end). */
@@ -110,23 +125,44 @@ export class OrbSpawner {
     const playerPos = new THREE.Vector3();
     this.playerRef.getWorldPosition(playerPos);
 
-    const angle  = Math.random() * Math.PI * 2;
-    const radius = 1.5 + Math.random() * 1.5;           // 1.5–3 m from player
-    const height = 0.5 + Math.random() * 1.5;            // 0.5–2 m above floor
+    const forward = new THREE.Vector3();
+    this.playerRef.getWorldDirection(forward);
+    if (forward.lengthSq() < 1e-6) forward.set(0, 0, -1);
+    forward.normalize();
 
-    const pos = new THREE.Vector3(
-      playerPos.x + Math.cos(angle) * radius,
-      playerPos.y + height,
-      playerPos.z + Math.sin(angle) * radius,
-    );
+    const up = new THREE.Vector3(0, 1, 0);
+    const right = new THREE.Vector3().crossVectors(forward, up);
+    if (right.lengthSq() < 1e-6) right.set(1, 0, 0);
+    else right.normalize();
 
-    // Gentle inward drift — keeps orbs drifting toward the player
+    const radius = this.preferForward
+      ? 1.05 + Math.random() * 0.85
+      : 1.4 + Math.random() * 1.2;
+    let pos: THREE.Vector3;
+
+    if (this.preferForward) {
+      const yaw = (Math.random() - 0.5) * 1.1;      // ~±31°
+      const pitch = (Math.random() - 0.35) * 0.55;  // slightly below eye height
+      const dir = forward.clone()
+        .addScaledVector(right, Math.sin(yaw))
+        .addScaledVector(up, Math.sin(pitch))
+        .normalize();
+      pos = playerPos.clone().addScaledVector(dir, radius);
+    } else {
+      const angle  = Math.random() * Math.PI * 2;
+      const height = 0.5 + Math.random() * 1.5;
+      pos = new THREE.Vector3(
+        playerPos.x + Math.cos(angle) * radius,
+        playerPos.y + height,
+        playerPos.z + Math.sin(angle) * radius,
+      );
+    }
+
     const inward = new THREE.Vector3()
       .subVectors(playerPos, pos)
       .normalize()
       .multiplyScalar(config.orbSpeedBase * 0.35);
 
-    // Add a small tangential component for visual variety
     inward.x += (Math.random() - 0.5) * 0.05;
     inward.z += (Math.random() - 0.5) * 0.05;
 

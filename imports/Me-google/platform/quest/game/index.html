@@ -4,42 +4,55 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0B0E16" />
-    <!-- Instruct the Meta Quest Browser to allow immersive-vr sessions -->
     <meta name="xr-spatial-tracking" content="true" />
-    <title>Orb Collector — Me-google xrOS</title>
+    <title>Orb Collector — Avatar Hands</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet" />
     <style>
+      :root {
+        --bg: #05070b;
+        --bg-elevated: #0e121c;
+        --bg-subtle: #161c2a;
+        --fg: #e8eaf0;
+        --fg-muted: #8b9bc0;
+        --fg-subtle: #5c6a86;
+        --border: rgba(232, 234, 240, 0.12);
+        --border-strong: rgba(232, 234, 240, 0.22);
+        --accent: #c8d0dc;
+        --accent-fg: #05070b;
+        --cyan: #00d4ff;
+        --ok: #00e5a0;
+        --warn: #ffb800;
+        --radius-sm: 8px;
+        --radius-md: 12px;
+        --radius-lg: 20px;
+        --radius-xl: 28px;
+        --space-2: 8px;
+        --space-3: 12px;
+        --space-4: 16px;
+        --space-5: 24px;
+        --space-6: 32px;
+        --font-display: "IBM Plex Sans", system-ui, sans-serif;
+        --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+        --motion-fast: 250ms;
+        --motion-quick: 150ms;
+        --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+      }
+
       * { margin: 0; padding: 0; box-sizing: border-box; }
 
-      body {
-        background: #05070B;
-        color: #E8EAF0;
-        font-family: system-ui, sans-serif;
+      html, body {
+        background: var(--bg);
+        color: var(--fg);
+        font-family: var(--font-display);
         overflow: hidden;
-        width: 100vw;
-        height: 100dvh;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 1.5rem;
+        width: 100%;
+        height: 100%;
       }
 
-      #app-title {
-        font-size: clamp(1.4rem, 5vw, 2.2rem);
-        font-weight: 700;
-        letter-spacing: 0.04em;
-        color: #7B5CFF;
-      }
+      button:not(:disabled), [role="button"]:not(:disabled) { cursor: pointer; }
 
-      #app-subtitle {
-        font-size: clamp(0.85rem, 2.5vw, 1.05rem);
-        color: #8B9BC0;
-        text-align: center;
-        max-width: 34ch;
-        line-height: 1.6;
-      }
-
-      /* Three.js canvas fills the whole viewport once injected */
       canvas {
         position: fixed !important;
         inset: 0;
@@ -47,17 +60,250 @@
         height: 100vh !important;
       }
 
-      /* VRButton injected by Three.js — keep its z-order above canvas */
       #VRButton {
-        z-index: 10 !important;
+        z-index: 15 !important;
+        left: 16px !important;
+        right: auto !important;
+        bottom: 16px !important;
+        top: auto !important;
+      }
+
+      #vr-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 20;
+        pointer-events: none;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+      }
+
+      #vr-overlay.is-playing #vr-panel { display: none; }
+
+      #vr-panel {
+        pointer-events: auto;
+        margin: auto var(--space-4) 18vh;
+        max-width: 440px;
+        width: calc(100% - var(--space-6));
+        background: var(--bg-elevated);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-xl);
+        padding: var(--space-5);
+        box-shadow: 0 24px 64px rgba(0, 0, 0, 0.45);
+      }
+
+      @media (prefers-reduced-motion: no-preference) {
+        #vr-panel {
+          animation: panel-in var(--motion-fast) var(--ease-out);
+        }
+      }
+
+      @keyframes panel-in {
+        from { opacity: 0; transform: translateY(8px) scale(0.96); }
+        to { opacity: 1; transform: none; }
+      }
+
+      .kicker {
+        font-size: 0.72rem;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--fg-muted);
+        font-weight: 500;
+      }
+
+      h1 {
+        font-size: clamp(1.6rem, 4vw, 2rem);
+        font-weight: 600;
+        letter-spacing: -0.03em;
+        margin: 6px 0 var(--space-3);
+        line-height: 1.15;
+      }
+
+      .lede {
+        color: var(--fg-muted);
+        font-size: 0.95rem;
+        line-height: 1.5;
+        margin-bottom: var(--space-4);
+      }
+
+      .steps {
+        list-style: none;
+        display: grid;
+        gap: var(--space-2);
+        margin-bottom: var(--space-5);
+      }
+
+      .steps li {
+        display: grid;
+        grid-template-columns: 28px 1fr;
+        gap: var(--space-3);
+        align-items: start;
+        font-size: 0.9rem;
+        line-height: 1.4;
+        color: var(--fg);
+      }
+
+      .steps .n {
+        width: 28px;
+        height: 28px;
+        border-radius: 999px;
+        border: 1px solid var(--border-strong);
+        display: grid;
+        place-items: center;
+        font-family: var(--font-mono);
+        font-size: 0.75rem;
+        color: var(--accent);
+      }
+
+      .actions {
+        display: flex;
+        gap: var(--space-2);
+        flex-wrap: wrap;
+      }
+
+      .btn {
+        appearance: none;
+        border: 1px solid var(--border-strong);
+        background: var(--bg-subtle);
+        color: var(--fg);
+        font: 500 0.95rem var(--font-display);
+        height: 44px;
+        padding: 0 18px;
+        border-radius: var(--radius-md);
+        transition: opacity var(--motion-quick) var(--ease-out), transform var(--motion-quick) var(--ease-out);
+      }
+
+      .btn:active { transform: scale(0.98); }
+      .btn:disabled { opacity: 0.4; cursor: default; }
+
+      .btn-primary {
+        background: var(--accent);
+        color: var(--accent-fg);
+        border-color: transparent;
+        flex: 1;
+        min-width: 140px;
+      }
+
+      #vr-result {
+        margin: 0 0 var(--space-4);
+        padding: var(--space-3) var(--space-4);
+        background: var(--bg-subtle);
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border);
+        font-size: 0.95rem;
+      }
+
+      #vr-result span {
+        color: var(--fg-muted);
+        margin-left: 8px;
+      }
+
+      #vr-hud {
+        pointer-events: none;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        padding: calc(var(--space-4) + env(safe-area-inset-top)) var(--space-4) var(--space-4);
+        gap: var(--space-3);
+      }
+
+      .chip-row {
+        display: flex;
+        gap: var(--space-2);
+        flex-wrap: wrap;
+        pointer-events: auto;
+      }
+
+      .chip {
+        background: rgba(14, 18, 28, 0.82);
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        padding: 8px 12px;
+        min-height: 40px;
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+      }
+
+      .chip .lbl {
+        font-size: 0.68rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--fg-muted);
+      }
+
+      .chip .val {
+        font-family: var(--font-mono);
+        font-variant-numeric: tabular-nums;
+        font-weight: 600;
+        font-size: 0.95rem;
+      }
+
+      .hud-actions { pointer-events: auto; display: flex; gap: var(--space-2); }
+
+      .btn-ghost {
+        height: 40px;
+        padding: 0 14px;
+        border-radius: 999px;
+        background: rgba(14, 18, 28, 0.82);
+      }
+
+      .btn-ghost[aria-pressed="true"] {
+        border-color: var(--cyan);
+        color: var(--cyan);
+      }
+
+      .hint {
+        margin-top: var(--space-4);
+        font-size: 0.78rem;
+        color: var(--fg-subtle);
+        line-height: 1.45;
+      }
+
+      @media (max-width: 520px) {
+        #vr-panel { margin-bottom: 12vh; }
+        h1 { font-size: 1.45rem; }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        #vr-panel { animation: none; }
+        .btn { transition: none; }
       }
     </style>
   </head>
   <body>
-    <div id="app-title">Orb Collector</div>
-    <div id="app-subtitle">
-      Put on your Quest 3 headset, press <strong>Enter VR</strong>, then aim and
-      trigger to pop floating orbs. 60 seconds. How high can you score?
+    <div id="vr-overlay">
+      <div id="vr-hud" hidden>
+        <div class="chip-row">
+          <div class="chip"><span class="lbl">Score</span><span class="val" id="hud-score">0</span></div>
+          <div class="chip"><span class="lbl">Combo</span><span class="val" id="hud-combo">—</span></div>
+          <div class="chip"><span class="lbl">Time</span><span class="val" id="hud-time">60s</span></div>
+          <div class="chip"><span class="lbl">Input</span><span class="val" id="hud-mode">Ghost hands</span></div>
+        </div>
+        <div class="hud-actions">
+          <button type="button" class="btn btn-ghost" id="btn-pause">Pause</button>
+          <button type="button" class="btn btn-ghost" id="btn-hands" aria-pressed="true">Hands on</button>
+        </div>
+      </div>
+
+      <section id="vr-panel" aria-label="Avatar Hands — start">
+        <p class="kicker">Avatar Hands</p>
+        <h1>Pinch the orbs.</h1>
+        <p class="lede">
+          Semi-transparent hands from the Quest Creator vision, wired into Orb Collector.
+          Same collect pipeline as the controllers — score, combo, and the wrist readout stay in sync.
+        </p>
+        <ol class="steps">
+          <li><span class="n">1</span><span>Press <strong>Start round</strong>. Ghost hands appear in front of you.</span></li>
+          <li><span class="n">2</span><span>Move the pointer — the right hand follows. The left wrist shows live score.</span></li>
+          <li><span class="n">3</span><span>Click (or pinch in headset) to collect. Chain grabs within 2s for combo.</span></li>
+        </ol>
+        <div id="vr-result" hidden></div>
+        <div class="actions">
+          <button type="button" class="btn btn-primary" id="btn-start">Start round</button>
+        </div>
+        <p class="hint">Space starts or pauses. H toggles hands. On Quest, Enter VR then pinch with tracked hands or use the trigger as before.</p>
+      </section>
     </div>
     <script type="module" src="/src/main.ts"></script>
   </body>

@@ -1,5 +1,7 @@
 import { defineConfig } from 'vite';
 
+const port = Number(process.env.PORT) || 5173;
+
 export default defineConfig({
   base: './',
   build: {
@@ -11,7 +13,13 @@ export default defineConfig({
     include: ['three'],
   },
   server: {
-    // Allow LAN access for on-device testing (Quest Browser)
     host: true,
+    port,
+    strictPort: false,
+  },
+  preview: {
+    host: true,
+    port,
+    strictPort: false,
   },
 });

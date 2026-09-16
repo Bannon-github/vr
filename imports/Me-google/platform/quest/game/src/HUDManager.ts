@@ -68,6 +68,11 @@ export class HUDManager {
     scene.add(this.group);
   }
 
+  /** Hide spatial HUD on desktop; OverlayUI chips cover that role. */
+  setVisible(v: boolean): void {
+    this.group.visible = v;
+  }
+
   // ---------------------------------------------------------------------------
   // Updates called by Game each frame
   // ---------------------------------------------------------------------------
