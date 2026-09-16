@@ -1,17 +1,13 @@
 /**
  * HandTrackingManager.ts — Quest hand tracking + desktop ghost-hand input.
  *
- * Previously unimplemented (see game README: "Hand tracking controls are not
- * implemented yet"). This manager:
- *
  *   1. Attaches WebXR `XRHand` spaces when the session advertises them.
- *   2. Detects a thumb/index pinch and collects the nearest live orb via
- *      the shared {@link findNearestInReach} helper.
+ *   2. Detects a thumb/index pinch from **world** joint positions
+ *      (`matrixWorld`) and collects the nearest live orb.
  *   3. On desktop (no XR session), maps the pointer onto a plane in front
  *      of the camera and treats click as a pinch.
  *
- * Output: the same `OrbCollectedCallback` ControllerManager uses, so ScoreManager
- * and HUDManager stay on a single collect pipeline.
+ * Output: the same `OrbCollectedCallback` ControllerManager uses.
  */
 
 import * as THREE from 'three';
@@ -25,6 +21,7 @@ import {
   PINCH_REACH_M,
   findNearestInReach,
   isPinchClosed,
+  nextPinchLatch,
   type ProximityCandidate,
 } from './collectProximity.js';
 import type { OrbCollectedCallback } from './ControllerManager.js';
@@ -63,16 +60,9 @@ export class HandTrackingManager {
 
     canvas.addEventListener('pointermove', (ev) => this.onPointerMove(ev, canvas));
     canvas.addEventListener('pointerdown', (ev) => this.onPointerDown(ev, canvas));
-    canvas.addEventListener('pointerup', () => {
-      this.pointerDown = false;
-      this.desktopPinchLatched = false;
-      this.avatar.setPinched(false);
-    });
-    canvas.addEventListener('pointerleave', () => {
-      this.pointerDown = false;
-      this.desktopPinchLatched = false;
-      this.avatar.setPinched(false);
-    });
+    canvas.addEventListener('pointerup', () => this.clearDesktopLatch());
+    canvas.addEventListener('pointerleave', () => this.clearDesktopLatch());
+    canvas.addEventListener('pointercancel', () => this.clearDesktopLatch());
 
     renderer.xr.addEventListener('sessionstart', () => {
       this.desktopEnabled = false;
@@ -104,6 +94,12 @@ export class HandTrackingManager {
   /** Game.loop arms this only while PLAYING so menu clicks do not collect. */
   setCollectArmed(armed: boolean): void {
     this.collectArmed = armed;
+  }
+
+  private clearDesktopLatch(): void {
+    this.pointerDown = false;
+    this.desktopPinchLatched = false;
+    this.avatar.setPinched(false);
   }
 
   /**
@@ -160,19 +156,19 @@ export class HandTrackingManager {
       anyJoints = true;
       const side: 0 | 1 = i === 0 ? 0 : 1;
       this.avatar.poseFromWristMatrix(side, wrist.matrixWorld, false);
-      if (thumb && index && collectEnabled) {
+      if (thumb && index) {
         this.thumbWorld.setFromMatrixPosition(thumb.matrixWorld);
         this.indexWorld.setFromMatrixPosition(index.matrixWorld);
         const pinched = isPinchClosed(this.thumbWorld, this.indexWorld);
         if (side === 1) this.avatar.setPinched(pinched);
-        if (pinched && !this.xrPinchLatched[i]) {
-          this.xrPinchLatched[i] = true;
+        const next = nextPinchLatch(pinched, this.xrPinchLatched[i]);
+        this.xrPinchLatched[i] = next.latched;
+        if (next.fire && collectEnabled) {
           const origin = this.indexWorld.clone();
           const hit = this.collectNear(origin, PINCH_REACH_M);
           if (hit) this.commitCollect(hit);
           else this.haptic.miss();
         }
-        if (!pinched) this.xrPinchLatched[i] = false;
       }
     }
     this.xrHandsLive = anyJoints;

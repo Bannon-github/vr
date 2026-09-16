@@ -5,20 +5,25 @@ Living checklist for `Bannon-github/vr`. Mark an item **done** only when the cod
 ## Done
 
 1. **Bootstrap import** (PR #1) — starter assets from `quest-vr-creator`, `Me-google`, and `WeMadeAGame` under `imports/`.
-2. **Avatar Hands (TODO #4) — pinch-collect orbs in Orb Collector** — **implemented on `feature/avatar-hands` (PR #2)**.
-   - Entry: Orb Collector overlay **Start round** button, then pinch (hands) or trigger (controllers). Press **H** to toggle the avatar-hand meshes.
-   - Connections: hand + controller collect both call the shared `OrbCollectedCallback`; colours come from `theme.ts`; score/combo is written through `ScoreManager`.
-   - Docs: root `README.md` “Avatar Hands” section; `imports/Me-google/platform/quest/game/README.md`.
-   - Screenshots: `docs/screenshots/avatar-hands-start.svg`, `docs/screenshots/avatar-hands-play.svg`.
+2. **Avatar Hands — pinch-collect in Orb Collector** (PR #2).
+   - Entry: overlay **Start round**, then pinch / trigger / click. **H** toggles meshes.
+   - One `OrbCollectedCallback`. Score/combo through `ScoreManager`.
+3. **Pause freezes the world** — only `GameState.PLAYING` simulates. Controllers and hands arm only while playing.
+4. **World-space XR pinch** — thumb/index use `matrixWorld`. Per-hand latch. Desktop `pointerleave` / `pointerup` / `pointercancel` clear the click latch.
+5. **Pause unlatches pinch** — `nextPinchLatch` still runs while paused so a released pinch can fire again after resume.
 
-## Still open (from quest-vr-creator TODO + repo notes)
+## Next (in this order)
 
-- Real-device Quest Browser full interaction test + feedback loop
-- Full binary glTF export via official GLTFExporter
-- Scene share via cloud / shortened link
-- Opacity live controls + more advanced material panel polish
-- Multiplayer, persistence beyond localStorage, Horizon Store packaging
+1. On-headset QA in Quest Browser (`adb reverse tcp:5173 tcp:5173`) with a real device screenshot
+2. Enable GitHub Pages (Settings → Pages → GitHub Actions) so the workflow in `.github/workflows/pages.yml` can serve HTTPS to the headset without a cable
+3. Comfort / feel polish until a stranger plays a second round
+4. Only then: Horizon Store packaging
 
-## Notes for the next agent
+Out of scope until a human asks: Unity, more `imports/` dumps, slot machines, A-Frame rewrite, accounts, multiplayer, monetization SDKs.
 
-Do not rewrite Orb Collector game files unless a test fails. Preview convention from earlier sessions: Vite on `0.0.0.0:8080` when a sandbox `/workspace/startup.sh` exists.
+## Notes for agents
+
+- Product path: `imports/Me-google/platform/quest/game/`
+- `npm install && npm test && npm run dev` from the **repo root**
+- Vite default is **5173**, not 8080
+- PR #3 is a stale empty duplicate of `feature/avatar-hands`. Do not continue it. Merge PR #2 after the pause-unlatch fix lands.

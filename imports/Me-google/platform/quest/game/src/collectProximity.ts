@@ -62,3 +62,17 @@ export const DESKTOP_REACH_M = 0.38;
 export function isPinchClosed(thumbTip: Vec3, indexTip: Vec3): boolean {
   return distance3(thumbTip, indexTip) <= PINCH_CLOSE_M;
 }
+
+/**
+ * Rising-edge pinch latch. Always run this, including while paused, so a
+ * pinch released during pause unlatches. The caller decides whether `fire`
+ * is allowed to collect.
+ */
+export function nextPinchLatch(
+  pinched: boolean,
+  latched: boolean,
+): { fire: boolean; latched: boolean } {
+  if (pinched && !latched) return { fire: true, latched: true };
+  if (!pinched) return { fire: false, latched: false };
+  return { fire: false, latched: true };
+}
