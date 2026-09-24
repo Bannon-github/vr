@@ -28,7 +28,7 @@ You need Node 20+ (22 is what CI uses). A Quest headset is optional for the firs
 ```bash
 git clone https://github.com/Bannon-github/vr.git
 cd vr
-npm install --prefix imports/Me-google/platform/quest/game
+npm install
 npm test
 npm run dev
 ```

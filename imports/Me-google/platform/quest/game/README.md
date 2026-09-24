@@ -80,22 +80,29 @@ game/
 
 ## Development
 
+From this folder, or from the repo root (`npm install` / `npm test` / `npm run dev` proxy here):
+
 ```bash
-# Install dependencies
 npm install
-
-# Start dev server (open in Quest Browser at http://<your-ip>:5173)
-npm run dev
-
-# Production build → dist/
-npm run build
-
-# Run unit tests
 npm test
+npm run dev      # http://localhost:5173
+npm run build    # production → dist/
 ```
 
-> **HTTPS required for WebXR**: serve with `npm run dev -- --https` or deploy behind a proxy
-> when testing on-device, since the WebXR API requires a secure context.
+### Quest Browser
+
+Do **not** point Quest Browser at your LAN IP with a self-signed cert. `localhost` is a secure context:
+
+```bash
+# computer: leave npm run dev running
+adb reverse tcp:5173 tcp:5173
+```
+
+Headset: Quest Browser → `http://localhost:5173` → **Enter VR**.
+
+Hand tracking **is implemented** (`HandTrackingManager` + `AvatarHands`). Pinch uses world joint positions (`matrixWorld`). Pause freezes orbs and unlatches pinch so the next pinch after resume still works.
+
+After this repo is on `main` with GitHub Pages enabled, the headset can load the HTTPS Pages URL with no cable.
 
 ## Architecture Notes
 
